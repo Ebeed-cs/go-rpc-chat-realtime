@@ -11,7 +11,7 @@ A real-time chatroom implementation using Go's concurrency features (goroutines,
 ## Features
 
 - Real-time message broadcasting to all connected clients
-- Join/leave notifications for all users
+- Join/leave notifications with auto-generated user IDs
 - No self-echo (clients don't receive their own messages from server)
 - Thread-safe client management using Mutex
 - Concurrent message handling using goroutines and channels
@@ -23,6 +23,7 @@ A real-time chatroom implementation using Go's concurrency features (goroutines,
 ### Server
 
 - Maintains a thread-safe map of connected clients
+- Each client gets an auto-generated unique ID (1, 2, 3...)
 - Each client has a dedicated outgoing message channel
 - Uses goroutines for concurrent client handling
 - Broadcasts messages to all clients except the sender
@@ -92,7 +93,7 @@ Type 'exit' to quit or press Ctrl+C.
 ------------------------------------
 You: Hello everyone!
 Bob: Hi Alice!
-User Charlie joined
+User [3] joined
 Charlie: Hey folks!
 ```
 
@@ -104,11 +105,25 @@ Enter your username: Bob
 Welcome to the chatroom, Bob!
 Type 'exit' to quit or press Ctrl+C.
 ------------------------------------
-User Bob joined
+User [2] joined
 Alice: Hello everyone!
 You: Hi Alice!
-User Charlie joined
+User [3] joined
 Charlie: Hey folks!
+```
+
+**Terminal 4 (Client - Charlie):**
+
+```
+$ go run client.go
+Enter your username: Charlie
+Welcome to the chatroom, Charlie!
+Type 'exit' to quit or press Ctrl+C.
+------------------------------------
+User [3] joined
+Alice: Hello everyone!
+Bob: Hi Alice!
+You: Hey folks!
 ```
 
 ## Technical Details
@@ -117,3 +132,4 @@ Charlie: Hey folks!
 - **Broadcasting:** Server uses channels to send messages to clients concurrently
 - **Thread Safety:** Mutex protects shared client list from race conditions
 - **No Self-Echo:** Clients print their own messages locally; server excludes sender from broadcasts
+- **User IDs:** Auto-incremented integer IDs assigned sequentially (1, 2, 3...) for join/leave notifications

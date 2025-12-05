@@ -9,18 +9,21 @@ import (
 
 type Client struct {
 	conn     net.Conn
+	id       int
 	username string
 	outgoing chan string
 }
 
 type ChatServer struct {
-	mu      sync.RWMutex
-	clients map[net.Conn]*Client
+	mu         sync.RWMutex
+	clients    map[net.Conn]*Client
+	nextID     int
 }
 
 func NewChatServer() *ChatServer {
 	return &ChatServer{
 		clients: make(map[net.Conn]*Client),
+		nextID:  1,
 	}
 }
 
@@ -30,10 +33,12 @@ func (s *ChatServer) addClient(conn net.Conn, username string) *Client {
 
 	client := &Client{
 		conn:     conn,
+		id:       s.nextID,
 		username: username,
 		outgoing: make(chan string, 10),
 	}
 	s.clients[conn] = client
+	s.nextID++
 
 	return client
 }
@@ -78,8 +83,8 @@ func (s *ChatServer) handleClient(conn net.Conn) {
 	client := s.addClient(conn, username)
 	defer s.removeClient(conn)
 
-	// Notify all other clients about new user
-	joinMsg := fmt.Sprintf("User %s joined", username)
+	// Notify all other clients about new user with ID
+	joinMsg := fmt.Sprintf("User [%d] joined", client.id)
 	s.broadcast(joinMsg, conn)
 
 	// Start sender goroutine
@@ -97,7 +102,7 @@ func (s *ChatServer) handleClient(conn net.Conn) {
 		n, err := conn.Read(buffer)
 		if err != nil {
 			// Client disconnected
-			leaveMsg := fmt.Sprintf("User %s left", username)
+			leaveMsg := fmt.Sprintf("User [%d] left", client.id)
 			s.broadcast(leaveMsg, conn)
 			return
 		}
