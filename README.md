@@ -10,6 +10,8 @@ A real-time chatroom implementation using Go's concurrency features (goroutines,
 
 ## Features
 
+### Deom Link : https://youtu.be/mzWIOSMGQG8
+
 - Real-time message broadcasting to all connected clients
 - Join/leave notifications with auto-generated user IDs
 - No self-echo (clients don't receive their own messages from server)
